@@ -1,0 +1,194 @@
+<html>
+<head>
+<title>lock.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #5f826b; font-style: italic;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+.s6 { color: #7a7e85;}
+</style>
+</head>
+<body bgcolor="#191a1c">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+lock.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">sys</span>
+<span class="s0">from </span><span class="s1">optparse </span><span class="s0">import </span><span class="s1">Values</span>
+<span class="s0">from </span><span class="s1">pathlib </span><span class="s0">import </span><span class="s1">Path</span>
+<span class="s0">from </span><span class="s1">typing </span><span class="s0">import </span><span class="s1">List</span>
+
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">cache </span><span class="s0">import </span><span class="s1">WheelCache</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">cli </span><span class="s0">import </span><span class="s1">cmdoptions</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">cli</span><span class="s2">.</span><span class="s1">req_command </span><span class="s0">import </span><span class="s2">(</span>
+    <span class="s1">RequirementCommand</span><span class="s2">,</span>
+    <span class="s1">with_cleanup</span><span class="s2">,</span>
+<span class="s2">)</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">cli</span><span class="s2">.</span><span class="s1">status_codes </span><span class="s0">import </span><span class="s1">SUCCESS</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">models</span><span class="s2">.</span><span class="s1">pylock </span><span class="s0">import </span><span class="s1">Pylock</span><span class="s2">, </span><span class="s1">is_valid_pylock_file_name</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">operations</span><span class="s2">.</span><span class="s1">build</span><span class="s2">.</span><span class="s1">build_tracker </span><span class="s0">import </span><span class="s1">get_build_tracker</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">req</span><span class="s2">.</span><span class="s1">req_install </span><span class="s0">import </span><span class="s2">(</span>
+    <span class="s1">check_legacy_setup_py_options</span><span class="s2">,</span>
+<span class="s2">)</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">utils</span><span class="s2">.</span><span class="s1">logging </span><span class="s0">import </span><span class="s1">getLogger</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">utils</span><span class="s2">.</span><span class="s1">misc </span><span class="s0">import </span><span class="s2">(</span>
+    <span class="s1">get_pip_version</span><span class="s2">,</span>
+<span class="s2">)</span>
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_internal</span><span class="s2">.</span><span class="s1">utils</span><span class="s2">.</span><span class="s1">temp_dir </span><span class="s0">import </span><span class="s1">TempDirectory</span>
+
+<span class="s1">logger </span><span class="s2">= </span><span class="s1">getLogger</span><span class="s2">(</span><span class="s1">__name__</span><span class="s2">)</span>
+
+
+<span class="s0">class </span><span class="s1">LockCommand</span><span class="s2">(</span><span class="s1">RequirementCommand</span><span class="s2">):</span>
+    <span class="s3">&quot;&quot;&quot; 
+    EXPERIMENTAL - Lock packages and their dependencies from: 
+ 
+    - PyPI (and other indexes) using requirement specifiers. 
+    - VCS project urls. 
+    - Local project directories. 
+    - Local or remote source archives. 
+ 
+    pip also supports locking from &quot;requirements files&quot;, which provide an easy 
+    way to specify a whole environment to be installed. 
+ 
+    The generated lock file is only guaranteed to be valid for the current 
+    python version and platform. 
+    &quot;&quot;&quot;</span>
+
+    <span class="s1">usage </span><span class="s2">= </span><span class="s4">&quot;&quot;&quot; 
+      %prog [options] [-e] &lt;local project path&gt; ... 
+      %prog [options] &lt;requirement specifier&gt; [package-index-options] ... 
+      %prog [options] -r &lt;requirements file&gt; [package-index-options] ... 
+      %prog [options] &lt;archive url/path&gt; ...&quot;&quot;&quot;</span>
+
+    <span class="s0">def </span><span class="s1">add_options</span><span class="s2">(</span><span class="s1">self</span><span class="s2">) </span><span class="s1">-&gt; </span><span class="s0">None</span><span class="s2">:</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span>
+            <span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">PipOption</span><span class="s2">(</span>
+                <span class="s4">&quot;--output&quot;</span><span class="s2">,</span>
+                <span class="s4">&quot;-o&quot;</span><span class="s2">,</span>
+                <span class="s1">dest</span><span class="s2">=</span><span class="s4">&quot;output_file&quot;</span><span class="s2">,</span>
+                <span class="s1">metavar</span><span class="s2">=</span><span class="s4">&quot;path&quot;</span><span class="s2">,</span>
+                <span class="s1">type</span><span class="s2">=</span><span class="s4">&quot;path&quot;</span><span class="s2">,</span>
+                <span class="s1">default</span><span class="s2">=</span><span class="s4">&quot;pylock.toml&quot;</span><span class="s2">,</span>
+                <span class="s1">help</span><span class="s2">=</span><span class="s4">&quot;Lock file name (default=pylock.toml). Use - for stdout.&quot;</span><span class="s2">,</span>
+            <span class="s2">)</span>
+        <span class="s2">)</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">requirements</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">constraints</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">no_deps</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">pre</span><span class="s2">())</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">editable</span><span class="s2">())</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">src</span><span class="s2">())</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">ignore_requires_python</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">no_build_isolation</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">use_pep517</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">no_use_pep517</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">check_build_deps</span><span class="s2">())</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">config_settings</span><span class="s2">())</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">no_binary</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">only_binary</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">prefer_binary</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">require_hashes</span><span class="s2">())</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">.</span><span class="s1">add_option</span><span class="s2">(</span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">progress_bar</span><span class="s2">())</span>
+
+        <span class="s1">index_opts </span><span class="s2">= </span><span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">make_option_group</span><span class="s2">(</span>
+            <span class="s1">cmdoptions</span><span class="s2">.</span><span class="s1">index_group</span><span class="s2">,</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">parser</span><span class="s2">,</span>
+        <span class="s2">)</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">parser</span><span class="s2">.</span><span class="s1">insert_option_group</span><span class="s2">(</span><span class="s5">0</span><span class="s2">, </span><span class="s1">index_opts</span><span class="s2">)</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">parser</span><span class="s2">.</span><span class="s1">insert_option_group</span><span class="s2">(</span><span class="s5">0</span><span class="s2">, </span><span class="s1">self</span><span class="s2">.</span><span class="s1">cmd_opts</span><span class="s2">)</span>
+
+    <span class="s2">@</span><span class="s1">with_cleanup</span>
+    <span class="s0">def </span><span class="s1">run</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">options</span><span class="s2">: </span><span class="s1">Values</span><span class="s2">, </span><span class="s1">args</span><span class="s2">: </span><span class="s1">List</span><span class="s2">[</span><span class="s1">str</span><span class="s2">]) </span><span class="s1">-&gt; int</span><span class="s2">:</span>
+        <span class="s1">logger</span><span class="s2">.</span><span class="s1">verbose</span><span class="s2">(</span><span class="s4">&quot;Using %s&quot;</span><span class="s2">, </span><span class="s1">get_pip_version</span><span class="s2">())</span>
+
+        <span class="s1">logger</span><span class="s2">.</span><span class="s1">warning</span><span class="s2">(</span>
+            <span class="s4">&quot;pip lock is currently an experimental command. &quot;</span>
+            <span class="s4">&quot;It may be removed/changed in a future release &quot;</span>
+            <span class="s4">&quot;without prior warning.&quot;</span>
+        <span class="s2">)</span>
+
+        <span class="s1">session </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">get_default_session</span><span class="s2">(</span><span class="s1">options</span><span class="s2">)</span>
+
+        <span class="s1">finder </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">_build_package_finder</span><span class="s2">(</span>
+            <span class="s1">options</span><span class="s2">=</span><span class="s1">options</span><span class="s2">,</span>
+            <span class="s1">session</span><span class="s2">=</span><span class="s1">session</span><span class="s2">,</span>
+            <span class="s1">ignore_requires_python</span><span class="s2">=</span><span class="s1">options</span><span class="s2">.</span><span class="s1">ignore_requires_python</span><span class="s2">,</span>
+        <span class="s2">)</span>
+        <span class="s1">build_tracker </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">enter_context</span><span class="s2">(</span><span class="s1">get_build_tracker</span><span class="s2">())</span>
+
+        <span class="s1">directory </span><span class="s2">= </span><span class="s1">TempDirectory</span><span class="s2">(</span>
+            <span class="s1">delete</span><span class="s2">=</span><span class="s0">not </span><span class="s1">options</span><span class="s2">.</span><span class="s1">no_clean</span><span class="s2">,</span>
+            <span class="s1">kind</span><span class="s2">=</span><span class="s4">&quot;install&quot;</span><span class="s2">,</span>
+            <span class="s1">globally_managed</span><span class="s2">=</span><span class="s0">True</span><span class="s2">,</span>
+        <span class="s2">)</span>
+
+        <span class="s1">reqs </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">get_requirements</span><span class="s2">(</span><span class="s1">args</span><span class="s2">, </span><span class="s1">options</span><span class="s2">, </span><span class="s1">finder</span><span class="s2">, </span><span class="s1">session</span><span class="s2">)</span>
+        <span class="s1">check_legacy_setup_py_options</span><span class="s2">(</span><span class="s1">options</span><span class="s2">, </span><span class="s1">reqs</span><span class="s2">)</span>
+
+        <span class="s1">wheel_cache </span><span class="s2">= </span><span class="s1">WheelCache</span><span class="s2">(</span><span class="s1">options</span><span class="s2">.</span><span class="s1">cache_dir</span><span class="s2">)</span>
+
+        <span class="s6"># Only when installing is it permitted to use PEP 660.</span>
+        <span class="s6"># In other circumstances (pip wheel, pip download) we generate</span>
+        <span class="s6"># regular (i.e. non editable) metadata and wheels.</span>
+        <span class="s0">for </span><span class="s1">req </span><span class="s0">in </span><span class="s1">reqs</span><span class="s2">:</span>
+            <span class="s1">req</span><span class="s2">.</span><span class="s1">permit_editable_wheels </span><span class="s2">= </span><span class="s0">True</span>
+
+        <span class="s1">preparer </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">make_requirement_preparer</span><span class="s2">(</span>
+            <span class="s1">temp_build_dir</span><span class="s2">=</span><span class="s1">directory</span><span class="s2">,</span>
+            <span class="s1">options</span><span class="s2">=</span><span class="s1">options</span><span class="s2">,</span>
+            <span class="s1">build_tracker</span><span class="s2">=</span><span class="s1">build_tracker</span><span class="s2">,</span>
+            <span class="s1">session</span><span class="s2">=</span><span class="s1">session</span><span class="s2">,</span>
+            <span class="s1">finder</span><span class="s2">=</span><span class="s1">finder</span><span class="s2">,</span>
+            <span class="s1">use_user_site</span><span class="s2">=</span><span class="s0">False</span><span class="s2">,</span>
+            <span class="s1">verbosity</span><span class="s2">=</span><span class="s1">self</span><span class="s2">.</span><span class="s1">verbosity</span><span class="s2">,</span>
+        <span class="s2">)</span>
+        <span class="s1">resolver </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">make_resolver</span><span class="s2">(</span>
+            <span class="s1">preparer</span><span class="s2">=</span><span class="s1">preparer</span><span class="s2">,</span>
+            <span class="s1">finder</span><span class="s2">=</span><span class="s1">finder</span><span class="s2">,</span>
+            <span class="s1">options</span><span class="s2">=</span><span class="s1">options</span><span class="s2">,</span>
+            <span class="s1">wheel_cache</span><span class="s2">=</span><span class="s1">wheel_cache</span><span class="s2">,</span>
+            <span class="s1">use_user_site</span><span class="s2">=</span><span class="s0">False</span><span class="s2">,</span>
+            <span class="s1">ignore_installed</span><span class="s2">=</span><span class="s0">True</span><span class="s2">,</span>
+            <span class="s1">ignore_requires_python</span><span class="s2">=</span><span class="s1">options</span><span class="s2">.</span><span class="s1">ignore_requires_python</span><span class="s2">,</span>
+            <span class="s1">upgrade_strategy</span><span class="s2">=</span><span class="s4">&quot;to-satisfy-only&quot;</span><span class="s2">,</span>
+            <span class="s1">use_pep517</span><span class="s2">=</span><span class="s1">options</span><span class="s2">.</span><span class="s1">use_pep517</span><span class="s2">,</span>
+        <span class="s2">)</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">trace_basic_info</span><span class="s2">(</span><span class="s1">finder</span><span class="s2">)</span>
+
+        <span class="s1">requirement_set </span><span class="s2">= </span><span class="s1">resolver</span><span class="s2">.</span><span class="s1">resolve</span><span class="s2">(</span><span class="s1">reqs</span><span class="s2">, </span><span class="s1">check_supported_wheels</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+
+        <span class="s0">if </span><span class="s1">options</span><span class="s2">.</span><span class="s1">output_file </span><span class="s2">== </span><span class="s4">&quot;-&quot;</span><span class="s2">:</span>
+            <span class="s1">base_dir </span><span class="s2">= </span><span class="s1">Path</span><span class="s2">.</span><span class="s1">cwd</span><span class="s2">()</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">output_file_path </span><span class="s2">= </span><span class="s1">Path</span><span class="s2">(</span><span class="s1">options</span><span class="s2">.</span><span class="s1">output_file</span><span class="s2">)</span>
+            <span class="s0">if not </span><span class="s1">is_valid_pylock_file_name</span><span class="s2">(</span><span class="s1">output_file_path</span><span class="s2">):</span>
+                <span class="s1">logger</span><span class="s2">.</span><span class="s1">warning</span><span class="s2">(</span>
+                    <span class="s4">&quot;%s is not a valid lock file name.&quot;</span><span class="s2">,</span>
+                    <span class="s1">output_file_path</span><span class="s2">,</span>
+                <span class="s2">)</span>
+            <span class="s1">base_dir </span><span class="s2">= </span><span class="s1">output_file_path</span><span class="s2">.</span><span class="s1">parent</span>
+        <span class="s1">pylock_toml </span><span class="s2">= </span><span class="s1">Pylock</span><span class="s2">.</span><span class="s1">from_install_requirements</span><span class="s2">(</span>
+            <span class="s1">requirement_set</span><span class="s2">.</span><span class="s1">requirements</span><span class="s2">.</span><span class="s1">values</span><span class="s2">(), </span><span class="s1">base_dir</span><span class="s2">=</span><span class="s1">base_dir</span>
+        <span class="s2">).</span><span class="s1">as_toml</span><span class="s2">()</span>
+        <span class="s0">if </span><span class="s1">options</span><span class="s2">.</span><span class="s1">output_file </span><span class="s2">== </span><span class="s4">&quot;-&quot;</span><span class="s2">:</span>
+            <span class="s1">sys</span><span class="s2">.</span><span class="s1">stdout</span><span class="s2">.</span><span class="s1">write</span><span class="s2">(</span><span class="s1">pylock_toml</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">output_file_path</span><span class="s2">.</span><span class="s1">write_text</span><span class="s2">(</span><span class="s1">pylock_toml</span><span class="s2">, </span><span class="s1">encoding</span><span class="s2">=</span><span class="s4">&quot;utf-8&quot;</span><span class="s2">)</span>
+
+        <span class="s0">return </span><span class="s1">SUCCESS</span>
+</pre>
+</body>
+</html>

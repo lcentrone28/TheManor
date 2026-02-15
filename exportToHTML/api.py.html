@@ -1,0 +1,322 @@
+<html>
+<head>
+<title>api.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #5f826b; font-style: italic;}
+.s1 { color: #bcbec4;}
+.s2 { color: #cf8e6d;}
+.s3 { color: #bcbec4;}
+.s4 { color: #7a7e85;}
+.s5 { color: #6aab73;}
+.s6 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#191a1c">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+api.py</font>
+</center></td></tr></table>
+<pre><span class="s0">&quot;&quot;&quot;Base API.&quot;&quot;&quot;</span>
+
+<span class="s2">from </span><span class="s1">__future__ </span><span class="s2">import </span><span class="s1">annotations</span>
+
+<span class="s2">import </span><span class="s1">os</span>
+<span class="s2">from </span><span class="s1">abc </span><span class="s2">import </span><span class="s1">ABC</span><span class="s3">, </span><span class="s1">abstractmethod</span>
+<span class="s2">from </span><span class="s1">pathlib </span><span class="s2">import </span><span class="s1">Path</span>
+<span class="s2">from </span><span class="s1">typing </span><span class="s2">import </span><span class="s1">TYPE_CHECKING</span>
+
+<span class="s2">if </span><span class="s1">TYPE_CHECKING</span><span class="s3">:</span>
+    <span class="s2">from </span><span class="s1">collections</span><span class="s3">.</span><span class="s1">abc </span><span class="s2">import </span><span class="s1">Iterator</span>
+    <span class="s2">from </span><span class="s1">typing </span><span class="s2">import </span><span class="s1">Literal</span>
+
+
+<span class="s2">class </span><span class="s1">PlatformDirsABC</span><span class="s3">(</span><span class="s1">ABC</span><span class="s3">):  </span><span class="s4"># noqa: PLR0904</span>
+    <span class="s0">&quot;&quot;&quot;Abstract base class for platform directories.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__</span><span class="s3">(  </span><span class="s4"># noqa: PLR0913, PLR0917</span>
+        <span class="s1">self</span><span class="s3">,</span>
+        <span class="s1">appname</span><span class="s3">: </span><span class="s1">str </span><span class="s3">| </span><span class="s2">None </span><span class="s3">= </span><span class="s2">None</span><span class="s3">,</span>
+        <span class="s1">appauthor</span><span class="s3">: </span><span class="s1">str </span><span class="s3">| </span><span class="s1">Literal</span><span class="s3">[</span><span class="s2">False</span><span class="s3">] | </span><span class="s2">None </span><span class="s3">= </span><span class="s2">None</span><span class="s3">,</span>
+        <span class="s1">version</span><span class="s3">: </span><span class="s1">str </span><span class="s3">| </span><span class="s2">None </span><span class="s3">= </span><span class="s2">None</span><span class="s3">,</span>
+        <span class="s1">roaming</span><span class="s3">: </span><span class="s1">bool </span><span class="s3">= </span><span class="s2">False</span><span class="s3">,  </span><span class="s4"># noqa: FBT001, FBT002</span>
+        <span class="s1">multipath</span><span class="s3">: </span><span class="s1">bool </span><span class="s3">= </span><span class="s2">False</span><span class="s3">,  </span><span class="s4"># noqa: FBT001, FBT002</span>
+        <span class="s1">opinion</span><span class="s3">: </span><span class="s1">bool </span><span class="s3">= </span><span class="s2">True</span><span class="s3">,  </span><span class="s4"># noqa: FBT001, FBT002</span>
+        <span class="s1">ensure_exists</span><span class="s3">: </span><span class="s1">bool </span><span class="s3">= </span><span class="s2">False</span><span class="s3">,  </span><span class="s4"># noqa: FBT001, FBT002</span>
+    <span class="s3">) </span><span class="s1">-&gt; </span><span class="s2">None</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot; 
+        Create a new platform directory. 
+ 
+        :param appname: See `appname`. 
+        :param appauthor: See `appauthor`. 
+        :param version: See `version`. 
+        :param roaming: See `roaming`. 
+        :param multipath: See `multipath`. 
+        :param opinion: See `opinion`. 
+        :param ensure_exists: See `ensure_exists`. 
+ 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">appname </span><span class="s3">= </span><span class="s1">appname  </span><span class="s4">#: The name of application.</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">appauthor </span><span class="s3">= </span><span class="s1">appauthor</span>
+        <span class="s5">&quot;&quot;&quot; 
+        The name of the app author or distributing body for this application. 
+ 
+        Typically, it is the owning company name. Defaults to `appname`. You may pass ``False`` to disable it. 
+ 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">version </span><span class="s3">= </span><span class="s1">version</span>
+        <span class="s5">&quot;&quot;&quot; 
+        An optional version path element to append to the path. 
+ 
+        You might want to use this if you want multiple versions of your app to be able to run independently. If used, 
+        this would typically be ``&lt;major&gt;.&lt;minor&gt;``. 
+ 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">roaming </span><span class="s3">= </span><span class="s1">roaming</span>
+        <span class="s5">&quot;&quot;&quot; 
+        Whether to use the roaming appdata directory on Windows. 
+ 
+        That means that for users on a Windows network setup for roaming profiles, this user data will be synced on 
+        login (see 
+        `here &lt;https://technet.microsoft.com/en-us/library/cc766489(WS.10).aspx&gt;`_). 
+ 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">multipath </span><span class="s3">= </span><span class="s1">multipath</span>
+        <span class="s5">&quot;&quot;&quot; 
+        An optional parameter which indicates that the entire list of data dirs should be returned. 
+ 
+        By default, the first item would only be returned. 
+ 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">opinion </span><span class="s3">= </span><span class="s1">opinion  </span><span class="s4">#: A flag to indicating to use opinionated values.</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">ensure_exists </span><span class="s3">= </span><span class="s1">ensure_exists</span>
+        <span class="s5">&quot;&quot;&quot; 
+        Optionally create the directory (and any missing parents) upon access if it does not exist. 
+ 
+        By default, no directories are created. 
+ 
+        &quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">_append_app_name_and_version</span><span class="s3">(</span><span class="s1">self</span><span class="s3">, *</span><span class="s1">base</span><span class="s3">: </span><span class="s1">str</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s1">params </span><span class="s3">= </span><span class="s1">list</span><span class="s3">(</span><span class="s1">base</span><span class="s3">[</span><span class="s6">1</span><span class="s3">:])</span>
+        <span class="s2">if </span><span class="s1">self</span><span class="s3">.</span><span class="s1">appname</span><span class="s3">:</span>
+            <span class="s1">params</span><span class="s3">.</span><span class="s1">append</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">appname</span><span class="s3">)</span>
+            <span class="s2">if </span><span class="s1">self</span><span class="s3">.</span><span class="s1">version</span><span class="s3">:</span>
+                <span class="s1">params</span><span class="s3">.</span><span class="s1">append</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">version</span><span class="s3">)</span>
+        <span class="s1">path </span><span class="s3">= </span><span class="s1">os</span><span class="s3">.</span><span class="s1">path</span><span class="s3">.</span><span class="s1">join</span><span class="s3">(</span><span class="s1">base</span><span class="s3">[</span><span class="s6">0</span><span class="s3">], *</span><span class="s1">params</span><span class="s3">)  </span><span class="s4"># noqa: PTH118</span>
+        <span class="s1">self</span><span class="s3">.</span><span class="s1">_optionally_create_directory</span><span class="s3">(</span><span class="s1">path</span><span class="s3">)</span>
+        <span class="s2">return </span><span class="s1">path</span>
+
+    <span class="s2">def </span><span class="s1">_optionally_create_directory</span><span class="s3">(</span><span class="s1">self</span><span class="s3">, </span><span class="s1">path</span><span class="s3">: </span><span class="s1">str</span><span class="s3">) </span><span class="s1">-&gt; </span><span class="s2">None</span><span class="s3">:</span>
+        <span class="s2">if </span><span class="s1">self</span><span class="s3">.</span><span class="s1">ensure_exists</span><span class="s3">:</span>
+            <span class="s1">Path</span><span class="s3">(</span><span class="s1">path</span><span class="s3">).</span><span class="s1">mkdir</span><span class="s3">(</span><span class="s1">parents</span><span class="s3">=</span><span class="s2">True</span><span class="s3">, </span><span class="s1">exist_ok</span><span class="s3">=</span><span class="s2">True</span><span class="s3">)</span>
+
+    <span class="s2">def </span><span class="s1">_first_item_as_path_if_multipath</span><span class="s3">(</span><span class="s1">self</span><span class="s3">, </span><span class="s1">directory</span><span class="s3">: </span><span class="s1">str</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s2">if </span><span class="s1">self</span><span class="s3">.</span><span class="s1">multipath</span><span class="s3">:</span>
+            <span class="s4"># If multipath is True, the first path is returned.</span>
+            <span class="s1">directory </span><span class="s3">= </span><span class="s1">directory</span><span class="s3">.</span><span class="s1">split</span><span class="s3">(</span><span class="s1">os</span><span class="s3">.</span><span class="s1">pathsep</span><span class="s3">)[</span><span class="s6">0</span><span class="s3">]</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">directory</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_data_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: data directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">site_data_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: data directory shared by users&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_config_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: config directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">site_config_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: config directory shared by the users&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_cache_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: cache directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">site_cache_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: cache directory shared by users&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_state_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: state directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_log_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: log directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_documents_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: documents directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_downloads_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: downloads directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_pictures_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: pictures directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_videos_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: videos directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_music_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: music directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_desktop_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: desktop directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">user_runtime_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: runtime directory tied to the user&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s3">@</span><span class="s1">abstractmethod</span>
+    <span class="s2">def </span><span class="s1">site_runtime_dir</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; str</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: runtime directory shared by users&quot;&quot;&quot;</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_data_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: data path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_data_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">site_data_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: data path shared by users&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_data_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_config_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: config path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_config_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">site_config_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: config path shared by the users&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_config_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_cache_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: cache path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_cache_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">site_cache_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: cache path shared by users&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_cache_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_state_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: state path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_state_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_log_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: log path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_log_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_documents_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: documents a path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_documents_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_downloads_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: downloads path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_downloads_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_pictures_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: pictures path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_pictures_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_videos_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: videos path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_videos_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_music_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: music path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_music_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_desktop_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: desktop path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_desktop_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">user_runtime_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: runtime path tied to the user&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_runtime_dir</span><span class="s3">)</span>
+
+    <span class="s3">@</span><span class="s1">property</span>
+    <span class="s2">def </span><span class="s1">site_runtime_path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Path</span><span class="s3">:</span>
+        <span class="s0">&quot;&quot;&quot;:return: runtime path shared by users&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_runtime_dir</span><span class="s3">)</span>
+
+    <span class="s2">def </span><span class="s1">iter_config_dirs</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">str</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site configuration directories.&quot;&quot;&quot;</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_config_dir</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_config_dir</span>
+
+    <span class="s2">def </span><span class="s1">iter_data_dirs</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">str</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site data directories.&quot;&quot;&quot;</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_data_dir</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_data_dir</span>
+
+    <span class="s2">def </span><span class="s1">iter_cache_dirs</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">str</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site cache directories.&quot;&quot;&quot;</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_cache_dir</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_cache_dir</span>
+
+    <span class="s2">def </span><span class="s1">iter_runtime_dirs</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">str</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site runtime directories.&quot;&quot;&quot;</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">user_runtime_dir</span>
+        <span class="s2">yield </span><span class="s1">self</span><span class="s3">.</span><span class="s1">site_runtime_dir</span>
+
+    <span class="s2">def </span><span class="s1">iter_config_paths</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">Path</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site configuration paths.&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">path </span><span class="s2">in </span><span class="s1">self</span><span class="s3">.</span><span class="s1">iter_config_dirs</span><span class="s3">():</span>
+            <span class="s2">yield </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">path</span><span class="s3">)</span>
+
+    <span class="s2">def </span><span class="s1">iter_data_paths</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">Path</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site data paths.&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">path </span><span class="s2">in </span><span class="s1">self</span><span class="s3">.</span><span class="s1">iter_data_dirs</span><span class="s3">():</span>
+            <span class="s2">yield </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">path</span><span class="s3">)</span>
+
+    <span class="s2">def </span><span class="s1">iter_cache_paths</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">Path</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site cache paths.&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">path </span><span class="s2">in </span><span class="s1">self</span><span class="s3">.</span><span class="s1">iter_cache_dirs</span><span class="s3">():</span>
+            <span class="s2">yield </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">path</span><span class="s3">)</span>
+
+    <span class="s2">def </span><span class="s1">iter_runtime_paths</span><span class="s3">(</span><span class="s1">self</span><span class="s3">) </span><span class="s1">-&gt; Iterator</span><span class="s3">[</span><span class="s1">Path</span><span class="s3">]:</span>
+        <span class="s0">&quot;&quot;&quot;:yield: all user and site runtime paths.&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">path </span><span class="s2">in </span><span class="s1">self</span><span class="s3">.</span><span class="s1">iter_runtime_dirs</span><span class="s3">():</span>
+            <span class="s2">yield </span><span class="s1">Path</span><span class="s3">(</span><span class="s1">path</span><span class="s3">)</span>
+</pre>
+</body>
+</html>

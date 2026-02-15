@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>_compat.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #5f826b; font-style: italic;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#191a1c">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+_compat.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">importlib</span><span class="s2">.</span><span class="s1">metadata</span>
+<span class="s0">import </span><span class="s1">os</span>
+<span class="s0">from </span><span class="s1">typing </span><span class="s0">import </span><span class="s1">Any</span><span class="s2">, </span><span class="s1">Optional</span><span class="s2">, </span><span class="s1">Protocol</span><span class="s2">, </span><span class="s1">Tuple</span><span class="s2">, </span><span class="s1">cast</span>
+
+<span class="s0">from </span><span class="s1">pip</span><span class="s2">.</span><span class="s1">_vendor</span><span class="s2">.</span><span class="s1">packaging</span><span class="s2">.</span><span class="s1">utils </span><span class="s0">import </span><span class="s1">NormalizedName</span><span class="s2">, </span><span class="s1">canonicalize_name</span>
+
+
+<span class="s0">class </span><span class="s1">BadMetadata</span><span class="s2">(</span><span class="s1">ValueError</span><span class="s2">):</span>
+    <span class="s0">def </span><span class="s1">__init__</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">dist</span><span class="s2">: </span><span class="s1">importlib</span><span class="s2">.</span><span class="s1">metadata</span><span class="s2">.</span><span class="s1">Distribution</span><span class="s2">, *, </span><span class="s1">reason</span><span class="s2">: </span><span class="s1">str</span><span class="s2">) </span><span class="s1">-&gt; </span><span class="s0">None</span><span class="s2">:</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">dist </span><span class="s2">= </span><span class="s1">dist</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">reason </span><span class="s2">= </span><span class="s1">reason</span>
+
+    <span class="s0">def </span><span class="s1">__str__</span><span class="s2">(</span><span class="s1">self</span><span class="s2">) </span><span class="s1">-&gt; str</span><span class="s2">:</span>
+        <span class="s0">return </span><span class="s3">f&quot;Bad metadata in </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">dist</span><span class="s0">} </span><span class="s3">(</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">reason</span><span class="s0">}</span><span class="s3">)&quot;</span>
+
+
+<span class="s0">class </span><span class="s1">BasePath</span><span class="s2">(</span><span class="s1">Protocol</span><span class="s2">):</span>
+    <span class="s4">&quot;&quot;&quot;A protocol that various path objects conform. 
+ 
+    This exists because importlib.metadata uses both ``pathlib.Path`` and 
+    ``zipfile.Path``, and we need a common base for type hints (Union does not 
+    work well since ``zipfile.Path`` is too new for our linter setup). 
+ 
+    This does not mean to be exhaustive, but only contains things that present 
+    in both classes *that we need*. 
+    &quot;&quot;&quot;</span>
+
+    <span class="s2">@</span><span class="s1">property</span>
+    <span class="s0">def </span><span class="s1">name</span><span class="s2">(</span><span class="s1">self</span><span class="s2">) </span><span class="s1">-&gt; str</span><span class="s2">:</span>
+        <span class="s0">raise </span><span class="s1">NotImplementedError</span><span class="s2">()</span>
+
+    <span class="s2">@</span><span class="s1">property</span>
+    <span class="s0">def </span><span class="s1">parent</span><span class="s2">(</span><span class="s1">self</span><span class="s2">) </span><span class="s1">-&gt; </span><span class="s3">&quot;BasePath&quot;</span><span class="s2">:</span>
+        <span class="s0">raise </span><span class="s1">NotImplementedError</span><span class="s2">()</span>
+
+
+<span class="s0">def </span><span class="s1">get_info_location</span><span class="s2">(</span><span class="s1">d</span><span class="s2">: </span><span class="s1">importlib</span><span class="s2">.</span><span class="s1">metadata</span><span class="s2">.</span><span class="s1">Distribution</span><span class="s2">) </span><span class="s1">-&gt; Optional</span><span class="s2">[</span><span class="s1">BasePath</span><span class="s2">]:</span>
+    <span class="s4">&quot;&quot;&quot;Find the path to the distribution's metadata directory. 
+ 
+    HACK: This relies on importlib.metadata's private ``_path`` attribute. Not 
+    all distributions exist on disk, so importlib.metadata is correct to not 
+    expose the attribute as public. But pip's code base is old and not as clean, 
+    so we do this to avoid having to rewrite too many things. Hopefully we can 
+    eliminate this some day. 
+    &quot;&quot;&quot;</span>
+    <span class="s0">return </span><span class="s1">getattr</span><span class="s2">(</span><span class="s1">d</span><span class="s2">, </span><span class="s3">&quot;_path&quot;</span><span class="s2">, </span><span class="s0">None</span><span class="s2">)</span>
+
+
+<span class="s0">def </span><span class="s1">parse_name_and_version_from_info_directory</span><span class="s2">(</span>
+    <span class="s1">dist</span><span class="s2">: </span><span class="s1">importlib</span><span class="s2">.</span><span class="s1">metadata</span><span class="s2">.</span><span class="s1">Distribution</span><span class="s2">,</span>
+<span class="s2">) </span><span class="s1">-&gt; Tuple</span><span class="s2">[</span><span class="s1">Optional</span><span class="s2">[</span><span class="s1">str</span><span class="s2">], </span><span class="s1">Optional</span><span class="s2">[</span><span class="s1">str</span><span class="s2">]]:</span>
+    <span class="s4">&quot;&quot;&quot;Get a name and version from the metadata directory name. 
+ 
+    This is much faster than reading distribution metadata. 
+    &quot;&quot;&quot;</span>
+    <span class="s1">info_location </span><span class="s2">= </span><span class="s1">get_info_location</span><span class="s2">(</span><span class="s1">dist</span><span class="s2">)</span>
+    <span class="s0">if </span><span class="s1">info_location </span><span class="s0">is None</span><span class="s2">:</span>
+        <span class="s0">return None</span><span class="s2">, </span><span class="s0">None</span>
+
+    <span class="s1">stem</span><span class="s2">, </span><span class="s1">suffix </span><span class="s2">= </span><span class="s1">os</span><span class="s2">.</span><span class="s1">path</span><span class="s2">.</span><span class="s1">splitext</span><span class="s2">(</span><span class="s1">info_location</span><span class="s2">.</span><span class="s1">name</span><span class="s2">)</span>
+    <span class="s0">if </span><span class="s1">suffix </span><span class="s2">== </span><span class="s3">&quot;.dist-info&quot;</span><span class="s2">:</span>
+        <span class="s1">name</span><span class="s2">, </span><span class="s1">sep</span><span class="s2">, </span><span class="s1">version </span><span class="s2">= </span><span class="s1">stem</span><span class="s2">.</span><span class="s1">partition</span><span class="s2">(</span><span class="s3">&quot;-&quot;</span><span class="s2">)</span>
+        <span class="s0">if </span><span class="s1">sep</span><span class="s2">:</span>
+            <span class="s0">return </span><span class="s1">name</span><span class="s2">, </span><span class="s1">version</span>
+
+    <span class="s0">if </span><span class="s1">suffix </span><span class="s2">== </span><span class="s3">&quot;.egg-info&quot;</span><span class="s2">:</span>
+        <span class="s1">name </span><span class="s2">= </span><span class="s1">stem</span><span class="s2">.</span><span class="s1">split</span><span class="s2">(</span><span class="s3">&quot;-&quot;</span><span class="s2">, </span><span class="s5">1</span><span class="s2">)[</span><span class="s5">0</span><span class="s2">]</span>
+        <span class="s0">return </span><span class="s1">name</span><span class="s2">, </span><span class="s0">None</span>
+
+    <span class="s0">return None</span><span class="s2">, </span><span class="s0">None</span>
+
+
+<span class="s0">def </span><span class="s1">get_dist_canonical_name</span><span class="s2">(</span><span class="s1">dist</span><span class="s2">: </span><span class="s1">importlib</span><span class="s2">.</span><span class="s1">metadata</span><span class="s2">.</span><span class="s1">Distribution</span><span class="s2">) </span><span class="s1">-&gt; NormalizedName</span><span class="s2">:</span>
+    <span class="s4">&quot;&quot;&quot;Get the distribution's normalized name. 
+ 
+    The ``name`` attribute is only available in Python 3.10 or later. We are 
+    targeting exactly that, but Mypy does not know this. 
+    &quot;&quot;&quot;</span>
+    <span class="s0">if </span><span class="s1">name </span><span class="s2">:= </span><span class="s1">parse_name_and_version_from_info_directory</span><span class="s2">(</span><span class="s1">dist</span><span class="s2">)[</span><span class="s5">0</span><span class="s2">]:</span>
+        <span class="s0">return </span><span class="s1">canonicalize_name</span><span class="s2">(</span><span class="s1">name</span><span class="s2">)</span>
+
+    <span class="s1">name </span><span class="s2">= </span><span class="s1">cast</span><span class="s2">(</span><span class="s1">Any</span><span class="s2">, </span><span class="s1">dist</span><span class="s2">).</span><span class="s1">name</span>
+    <span class="s0">if not </span><span class="s1">isinstance</span><span class="s2">(</span><span class="s1">name</span><span class="s2">, </span><span class="s1">str</span><span class="s2">):</span>
+        <span class="s0">raise </span><span class="s1">BadMetadata</span><span class="s2">(</span><span class="s1">dist</span><span class="s2">, </span><span class="s1">reason</span><span class="s2">=</span><span class="s3">&quot;invalid metadata entry 'name'&quot;</span><span class="s2">)</span>
+    <span class="s0">return </span><span class="s1">canonicalize_name</span><span class="s2">(</span><span class="s1">name</span><span class="s2">)</span>
+</pre>
+</body>
+</html>
