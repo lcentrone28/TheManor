@@ -31,6 +31,7 @@ while game_finished == False:
 
     consensus_choice_made = False
     consensus_opponents = 0
+    consensus_choices = []
     chosen_gem = ""
     chose_ruby = False
     chose_emerald = False
