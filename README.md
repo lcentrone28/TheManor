@@ -1,8 +1,6 @@
-# The Manor
+# [The Manor](https://uhohtoosilly.itch.io/themanor)
 ## You have been invited to The Manor to participate in a series of trials, sponsored by rich people with nothing better to do who like to bet on the contestants.
 ### Compete in trials, collect coffee coins, make a million bucks and lasting friendships.
-
----
 
 I created “The Manor” to showcase the things I learned in the first 15 “days” (lessons) of the 100 Days of Code™: The Complete Python Pro Bootcamp by Dr. Angela Yu as well as enforce that learning and build upon it.
 
