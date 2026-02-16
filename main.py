@@ -90,7 +90,7 @@ advise you take it with you.” Niles puts the coin back in his coat pocket and 
 
         first_input = input('''"Okay then, I assume you understand now, [yes]?" Niles says as if it were a statement and not a question.
 
-(input your answer here, inputs accepted with show up with [brackets]) ->   ''').lower()
+(input your answer here, inputs accepted will show up with [brackets]) ->   ''').lower()
 
         if first_input == "yes" or first_input == "ya":
             print('''\nHe smiles again, puts the coin in his coat pocket, bows slightly, wishes you luck and begins to walk out. 
