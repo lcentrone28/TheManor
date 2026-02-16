@@ -76,7 +76,7 @@ damaging the paint.
         print("\nYou think about how far fashion has come. How it's more accessible now but lacks quality or inspiration.")
     else:
         print('''\nThey all look extremely haunted and you feel if you look too closely they'll look back so you rush down the 
-              stairs as quickly as possible.''')
+stairs as quickly as possible.''')
 
 
 def study():
@@ -102,6 +102,10 @@ You rummage through them for a while, pocket two coffee coins, and then turn you
     else:
         print("\nYou walk over to the desk, push the maps to the side and give your focus to the computer.\n")
 
+def update_coinage(new_game):
+    global coinage
+    if new_game:
+        coinage = 0
 
 # starting_room()
 # hallway()

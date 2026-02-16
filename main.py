@@ -558,7 +558,7 @@ sooooo much money.
                 print('''You hang out until you reach your social battery and bid Niles a farewell, he informs you that the investors were pleased 
 with your performance and you will most likely be asked to return. This takes a substantial amount of the sting out of 
 the loss and allows you to just enjoy the experience for what it was.
-        ''')
+''')
                 achievements['Betrayed Trust'] = "You opted for the Ruby of Solidarity but they could only see green."
 
         game_over = True
@@ -611,35 +611,7 @@ Better luck next time!!!
     for key, value in achievements.items():
         print(f"\u2022 {key}: {value}")
 
-    lucky = True
-    lives = 1
-    prize_amount = 0
-    prize_amount_total = 0
-    difficulty = ""
-    achievements = {}
-
-    # game variables
-    hop_win = False
-    hop_req = 0
-    hop_req_str = ""
-
-    ledger_win = False
-    ledger_req = 0
-    points = 0
-
-    consensus_choice_made = False
-    consensus_opponents = 0
-    consensus_choices = []
-    chosen_gem = ""
-    chose_ruby = False
-    chose_emerald = False
-    greedy_players = 0
-    winning_gem = ""
-    many_greedy = False
-
-    code_solved = False
-    code_attempts = 0
-    code_length = 0
+    areas.update_coinage(True)
 
     replay_answered = False
 
