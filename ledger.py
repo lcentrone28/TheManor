@@ -20,7 +20,7 @@ def ledger_game(ledger_req, lives):
         valid_first_answer = False
 
         while valid_first_answer == False:
-            first_answer = input(f'''\nIs the {random_key1}\033[1m higher\033[0m or\033[1m lower\033[0m than the {random_key2}?\n\n''').lower()
+            first_answer = input(f'''\nIs the {random_key1} [higher] or [lower] than the {random_key2}?\n\n''').lower()
 
             if first_answer == "higher":
                 if random_value1 > random_value2:
@@ -35,7 +35,7 @@ def ledger_game(ledger_req, lives):
                 else:
                     return False, lives, points
             else:
-                print("\nPlease enter either\033[1m higher\033[0m or\033[1m lower\033[0m.")
+                print("\nPlease enter either [higher] or [lower].")
 
 
         game_started = True
@@ -54,7 +54,7 @@ def ledger_game(ledger_req, lives):
             valid_answer = False
 
             while valid_answer == False:
-                answer = input(f'''\nIs the {random_key1}\033[1m higher\033[0m or\033[1m lower\033[0m than {random_key2}?\n\n''').lower()
+                answer = input(f'''\nIs the {random_key1} [higher] or [lower] than {random_key2}?\n\n''').lower()
 
                 if answer == "higher":
                     if random_value1 > random_value2:
@@ -75,7 +75,7 @@ def ledger_game(ledger_req, lives):
                         else:
                             return False, lives, points
                 else:
-                    print("\nPlease enter either\033[1m higher\033[0m or\033[1m lower\022[0m.")
+                    print("\nPlease enter either [higher] or [lower].")
 
     # print(points)
 

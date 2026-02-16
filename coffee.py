@@ -63,13 +63,13 @@ a little and then down it in one sip, it's the best espresso you've ever had.
 ''')
             choice_made = True
         elif areas.coinage == 2:
-            coffee_choice = input("You can get a black\033[1m coffee\033[0m or a shot of\033[1m espresso\033[0m.\n\n").lower()
+            coffee_choice = input("You can get a black [coffee] or a shot of [espresso].\n\n").lower()
         elif areas.coinage == 7:
-            coffee_choice = input("You can get a black\033[1m coffee\033[0m, a shot of\033[1m espresso\033[0m, a\033[1m latte\033[0m, a\033[1m cappuccino\033[0m, or a\033[1m mochaccino\033[0m.\n\n").lower()
+            coffee_choice = input("You can get a black [coffee], a shot of [espresso], a [latte], a [cappuccino], or a [mochaccino].\n\n").lower()
         elif areas.coinage >= 5:
-            coffee_choice = input("You can get a black\033[1m coffee\033[0m, a shot of\033[1m espresso\033[0m, a\033[1m latte\033[0m, or a\033[1m cappuccino\033[0m.\n\n").lower()
+            coffee_choice = input("You can get a black [coffee], a shot of [espresso], a [latte], or a [cappuccino].\n\n").lower()
         elif areas.coinage >= 3:
-            coffee_choice = input("You can get a black\033[1m coffee\033[0m, a shot of\033[1m espresso\033[0m, or a\033[1m latte\033[0m.\n\n").lower()
+            coffee_choice = input("You can get a black [coffee], a shot of [espresso], or a [latte].\n\n").lower()
 
         if coffee_choice != "":
             resource_check = check_resources(coffee_choice)
@@ -106,7 +106,7 @@ cappuccino you've ever had.
 ''')
                     choice_made = True
                 elif coffee_choice == "mochaccino":
-                    print(f'''\nYou press the button, a disposable cup covered in\033[1m {first_number}\033[0ms drops down and fills with coffee and milk. You pick up the 
+                    print(f'''\nYou press the button, a disposable cup covered in {first_number}s drops down and fills with coffee and milk. You pick up the 
 oddly designed cup, swirl it around gently as to not spill any, and sip on it while admiring the different plants, 
 it's the best mochaccino you've ever had.
 ''')

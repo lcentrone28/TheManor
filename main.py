@@ -60,12 +60,12 @@ while game_finished == False:
     # print(decrypted_password)
 
     while game_over == False and lives > 0:
-        print('''\n\033[1m   _   _    _______ _            __  __                           _   _
+        print('''   _   _    _______ _            __  __                           _   _
   | | | |  |__   __| |          |  \\/  |                         | | | | 
  / __) __)    | |  | |__   ___  | \\  / | __ _ _ __   ___  _ __  / __) __)
  \\__ \\__ \\    | |  | '_ \\ / _ \\ | |\\/| |/ _` | '_ \\ / _ \\| '__| \\__ \\__ \\
  (   (   /    | |  | | | |  __/ | |  | | (_| | | | | (_) | |    (   (   /
-  |_| |_|     |_|  |_| |_|\\___| |_|  |_|\\__,_|_| |_|\\___/|_|     |_| |_| \033[0m\n''')
+  |_| |_|     |_|  |_| |_|\\___| |_|  |_|\\__,_|_| |_|\\___/|_|     |_| |_| ''')
 
         print('''You have been invited to The Manor to participate in a series of trials, sponsored by rich people with nothing 
 better to do who like to bet on the contestants. There was a short, incredibly invasive, interview that you passed with 
@@ -88,7 +88,9 @@ to find any of these coins” he pulls a unique coin out of his coat pocket, it'
 advise you take it with you.” Niles puts the coin back in his coat pocket and continues
 ''')
 
-        first_input = input('"Okay then, I assume you understand now,\033[1m yes\033[0m?" Niles says as if it were a statement and not a question, \n\n').lower()
+        first_input = input('''"Okay then, I assume you understand now, [yes]?" Niles says as if it were a statement and not a question.
+
+(input your answer here, inputs accepted with show up with [brackets]) ->   ''').lower()
 
         if first_input == "yes" or first_input == "ya":
             print('''\nHe smiles again, puts the coin in his coat pocket, bows slightly, wishes you luck and begins to walk out. 
@@ -140,7 +142,7 @@ or 50 thousand dollar marks, just know the completion requirements will be highe
 
         while diff_choice_made == False:
             diff_choice = input('''He pauses for a moment and then, as if he expected an answer already, asks you “So how good do you think you are? 
-How much would you like to wager?\033[1m 10, 20, 30,\033[0m or\033[1m 50\033[0m thousand dollars?"\n\n''').lower()
+How much would you like to wager? [10], [20], [30], or [50] thousand dollars?"\n\n''').lower()
 
             if diff_choice == "10" or diff_choice == "10,000" or diff_choice == "$10,000" or diff_choice == "10k" or diff_choice == "$10k":
                 difficulty = "easy"
@@ -214,7 +216,7 @@ How much would you like to wager?\033[1m 10, 20, 30,\033[0m or\033[1m 50\033[0m 
         # print(first_number)
 
         print(f'''\n“Splendid!” The voice proclaims “Now that that matter has been settled we can get on with our first trial, 
-you will compete against the Hand of Providence in a classic\033[1m rock, paper, scissors\033[0m battle.”
+you will compete against the Hand of Providence in a classic [rock], [paper], [scissors] battle.”
         
 “Since you chose to face these trials on {difficulty} difficulty you must best The Hand {hop_req_str} times, you can start whenever 
 you're ready. It will automatically make its choice when it senses your movement and I will record the results. 
@@ -226,7 +228,8 @@ anticipate this great foe's first move and plan accordingly.
 
 "I know I said start whenever but can you start sooner rather than later?" the game master interrupts your imaginary 
 plot to so rudely tell to you to hurry up and make a choice. You move your hand to assume the first position to see if 
-the hand responds, then change it at the last second to..''')
+the hand responds, then change it at the last second to..
+''')
 
         while not hop_win and not game_over:
             hop_win, lives = handsofprov.hop_game(hop_req, lives)
@@ -292,8 +295,8 @@ through the door to the right. Better luck next time.”''')
 enough score because a bookshelf behind you moves and reveals a small door. You go through the door and enter a small 
 passageway. It's the first area that doesn’t have any decorations, only a table to the left and a glass door at the end. 
 
-On the table there is a note and two pendants. The note states that the red pendant on the left is a\033[1m ruby\033[0m and 
-is for those who wish to share the victory, while the green pendant on the right is an\033[1m emerald\033[0m and is for those 
+On the table there is a note and two pendants. The note states that the red pendant on the left is a [ruby] and 
+is for those who wish to share the victory, while the green pendant on the right is an [emerald] and is for those 
 who wish to take it all. It explains that you must choose one to carry with you into the next challenge and that the 
 other participants gathered here today will also face the same choice. By choosing the ruby you stand in solidarity 
 with your peers, everyone who passes the trials gets to enjoy “the fruits of their labor” as the note calls it. By 
@@ -309,7 +312,7 @@ why it chose the wording it did. Attempting to steal implies you can fail, presu
             if chosen_gem == "ruby" or chosen_gem == "emerald":
                 consensus_choice_made = True
             else:
-                print("You need to choose,\033[1m ruby\033[0m or\033[1m emerald\033[0m.")
+                print("You need to choose, [ruby] or [emerald].")
 
         if chosen_gem == "ruby":
             chose_ruby = True
@@ -377,7 +380,7 @@ playing nonetheless. Hang out, enjoy a cup of coffee while you wait, Niles will 
         if game_over == True:
             break
 
-        print(f'''You take out the note you got at the begging of the game, it reads "\033[1m{encrypted_password}\033[0m", you remember Niles called it a password 
+        print(f'''You take out the note you got at the beginning of the game, it reads "[{encrypted_password}]", you remember Niles called it a password 
 and said it must be altered before it can be used, "Maybe I'm supposed to enter this into this little machine?” you 
 say under your breath, finishing your thought out loud.
 ''')
@@ -393,7 +396,7 @@ say under your breath, finishing your thought out loud.
 this machine so you try again, ensuring to type it exactly as it is written on the note.
 ''')
             else:
-                print(f'''\nThe screen displays a new password "\033[1m{decrypted_password}\033[0m". You grab a pen from the desk and write it below the old password on the note.
+                print(f'''\nThe screen displays a new password "[{decrypted_password}]". You grab a pen from the desk and write it below the old password on the note.
 ''')
                 password_decrypted = True
 
@@ -565,12 +568,12 @@ the loss and allows you to just enjoy the experience for what it was.
             print('''\n\n✦•·································•✦•·································•✦
     
 Congratulations on completing
-\033[1m   _   _    _______ _            __  __                           _   _
+   _   _    _______ _            __  __                           _   _
   | | | |  |__   __| |          |  \\/  |                         | | | | 
  / __) __)    | |  | |__   ___  | \\  / | __ _ _ __   ___  _ __  / __) __)
  \\__ \\__ \\    | |  | '_ \\ / _ \\ | |\\/| |/ _` | '_ \\ / _ \\| '__| \\__ \\__ \\
  (   (   /    | |  | | | |  __/ | |  | | (_| | | | | (_) | |    (   (   /
-  |_| |_|     |_|  |_| |_|\\___| |_|  |_|\\__,_|_| |_|\\___/|_|     |_| |_| \033[0m
+  |_| |_|     |_|  |_| |_|\\___| |_|  |_|\\__,_|_| |_|\\___/|_|     |_| |_| 
     
 ✦•·································•✦•·································•✦
 ''')
@@ -591,12 +594,12 @@ Congratulations on completing
             print('''\n\n✦•·································•✦•·································•✦
     
 You were dismissed from
-\033[1m   _   _    _______ _            __  __                           _   _
+   _   _    _______ _            __  __                           _   _
   | | | |  |__   __| |          |  \\/  |                         | | | | 
  / __) __)    | |  | |__   ___  | \\  / | __ _ _ __   ___  _ __  / __) __)
  \\__ \\__ \\    | |  | '_ \\ / _ \\ | |\\/| |/ _` | '_ \\ / _ \\| '__| \\__ \\__ \\
  (   (   /    | |  | | | |  __/ | |  | | (_| | | | | (_) | |    (   (   /
-  |_| |_|     |_|  |_| |_|\\___| |_|  |_|\\__,_|_| |_|\\___/|_|     |_| |_| \033[0m
+  |_| |_|     |_|  |_| |_|\\___| |_|  |_|\\__,_|_| |_|\\___/|_|     |_| |_|
     
 Better luck next time!!!
     
@@ -608,6 +611,36 @@ Better luck next time!!!
     for key, value in achievements.items():
         print(f"\u2022 {key}: {value}")
 
+    lucky = True
+    lives = 1
+    prize_amount = 0
+    prize_amount_total = 0
+    difficulty = ""
+    achievements = {}
+
+    # game variables
+    hop_win = False
+    hop_req = 0
+    hop_req_str = ""
+
+    ledger_win = False
+    ledger_req = 0
+    points = 0
+
+    consensus_choice_made = False
+    consensus_opponents = 0
+    consensus_choices = []
+    chosen_gem = ""
+    chose_ruby = False
+    chose_emerald = False
+    greedy_players = 0
+    winning_gem = ""
+    many_greedy = False
+
+    code_solved = False
+    code_attempts = 0
+    code_length = 0
+
     replay_answered = False
 
     while replay_answered == False:
@@ -615,7 +648,7 @@ Better luck next time!!!
 
         if replay == "no":
             print('''
-\033[1mThanks for playing my game, hope it was as much fun to play as it was to make!\033[0m
+Thanks for playing my game, hope it was as much fun to play as it was to make!
                
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⡴⠶⢤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⣠⡴⠞⠳⠶⠦⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠾⠋⠀⠀⠀⠀⠹⣧⠀⠀⠀⠀⠀⠀⠀⠀
@@ -649,4 +682,4 @@ Better luck next time!!!
             print("\n" * 100)
             replay_answered = True
         else:
-            print("\nPlease answer with either\033[1m yes or\033[0m\033[1m no.\033[0m")
+            print("\nPlease answer with either [yes] or [no].")

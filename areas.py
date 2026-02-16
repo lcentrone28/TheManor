@@ -3,8 +3,8 @@ coinage = 0
 
 def starting_room():
     global coinage
-    sr_choice = input('''You look around the room some more. You've never actually seen a grandfather\033[1m clock\033[0m in person. You notice the taxidermied\033[1m 
-raven\033[0m is holding something in it's beak and you're sure that\033[1m painting\033[0ms eye's are following you.\n\n''').lower()
+    sr_choice = input('''You look around the room some more. You've never actually seen a grandfather [clock] in person. You notice the taxidermied 
+[raven] is holding something in it's beak and you're sure that [painting]s eye's are following you.\n\n''').lower()
 
     if sr_choice == "raven":
         print('''\nYou take a closer look at the raven, it's got a coffee coin in it's beak. You pocket the coin and move on.
@@ -23,7 +23,7 @@ You decide you should move on before it steals your soul or something.
 
 def hallway():
     global coinage
-    hallway_choice = input("You want to check out the\033[1m view\033[0m but you feel you're waisting time and should probably just focus on progressing.\n\n").lower()
+    hallway_choice = input("You want to check out the [view] but you feel you're waisting time and should probably just focus on progressing.\n\n").lower()
 
     if hallway_choice == "view":
         print('''\nYou decide it's no big deal, there's no time limit after all. You approach the window, you can see one of the 
@@ -37,7 +37,7 @@ before. You pocket the coin, take in the view, and then move on.
 
 def doll_room():
     global coinage
-    dr_choice = input('''Among the \033[1m doll\033[0ms there's a few other things that interest you. A\033[1m music\033[0m box, an empty\033[1m birdcage\033[0m, and a cabinet 
+    dr_choice = input('''Among the [doll]s there's a few other things that interest you. A [music] box, an empty [birdcage], and a cabinet 
 that has an Alice in Wonderland themed sign on one of the door knobs.\n\n''').lower()
 
     if dr_choice == "doll" or dr_choice == "dolls":
@@ -61,7 +61,7 @@ your only able to retrieve two of them.
 
 def stairway():
     global coinage
-    sw_choice = input('''The creepiest of which are the picture of the young girl with a stuffed\033[1m rabbit\033[0m, the sleeping\033[1m baby\033[0m, the\033[1m family\033[0m of farmers, and the\033[1m woman\033[0m in a fancy dress.\n\n''').lower()
+    sw_choice = input('''The creepiest of which are the picture of the young girl with a stuffed [rabbit], the sleeping [baby], the [family] of farmers, and the [woman] in a fancy dress.\n\n''').lower()
 
     if sw_choice == "rabbit":
         print('''\nOddly just as cute as it is disturbing. There's a coffee coin taped to the wall beside it that you successfully remove without 
@@ -81,8 +81,8 @@ damaging the paint.
 
 def study():
     global coinage
-    st_choice = input('''\nYou wonder if you should look closer at the\033[1m globe\033[0m, the\033[1m books\033[0m that haven't been put back on the 
-shelves yet, the\033[1m maps\033[0m on the desk or head straight for the computer.\n\n''').lower()
+    st_choice = input('''\nYou wonder if you should look closer at the [globe], the [books] that haven't been put back on the 
+shelves yet, the [maps] on the desk or head straight for the computer.\n\n''').lower()
 
     if st_choice == "globe":
         print('''\nAs you get closer the hum gets louder, you notice a coffee coin on the rim that goes around the center. 

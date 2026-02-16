@@ -23,7 +23,7 @@ def hop_game(hop_req, lives):
             player_choice = input("\n").lower()
 
             if player_choice != "rock" and player_choice != "paper" and player_choice != "scissors":
-                print("\nThe game master informs you that you must play\033[1m rock, paper, or scissors\033[0m.")
+                print("\nThe game master informs you that you must play [rock], [paper], or [scissors].")
             else:
                 valid_choice_made = True
 
